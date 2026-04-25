@@ -15,7 +15,7 @@ export default function Home() {
 
       {/* TODO(2단계): 지도(전 세계 핀) 자리 — 카드 리스트 위에 들어갈 예정 */}
 
-      <section className="grid gap-4 sm:grid-cols-2">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {lessons.map((lesson) => (
           <LessonCard key={lesson.id} lesson={lesson} />
         ))}

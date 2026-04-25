@@ -26,11 +26,11 @@ export default function LessonPage({ params }: { params: { id: string } }) {
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
-      <Link href="/" className="text-body-2 text-fg-muted hover:text-link">
+      <Link href="/" className="text-body-2 text-fg hover:text-link">
         ← 모든 수업
       </Link>
 
-      <header className="mt-6">
+      <header className="mt-8">
         <div className="flex flex-wrap items-center gap-2 text-caption text-fg-muted">
           <span
             aria-hidden
@@ -59,7 +59,7 @@ export default function LessonPage({ params }: { params: { id: string } }) {
         ))}
       </article>
 
-      <aside className="mt-10 rounded-md bg-brand-soft p-6">
+      <aside className="mt-10 rounded-l-none rounded-r-md border-l-4 border-brand bg-surface p-6">
         <p className="text-caption text-fg-muted">핵심 한 줄</p>
         <p className="mt-2 text-heading-1 text-fg">{story.keyTakeaway}</p>
       </aside>

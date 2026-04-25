@@ -25,7 +25,7 @@ export function LessonCard({ lesson }: { lesson: Lesson }) {
         <span aria-hidden>·</span>
         <span>{meta.subject.name}</span>
       </div>
-      <h2 className="mt-3 text-title-3 text-fg group-hover:text-link">
+      <h2 className="mt-3 text-title-2 text-fg group-hover:text-link">
         {headline.title}
       </h2>
       <p className="mt-2 text-body-2 text-fg-muted">{headline.hook}</p>
