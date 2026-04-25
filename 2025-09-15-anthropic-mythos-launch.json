@@ -1,0 +1,38 @@
+{
+  "id": "2025-09-15-anthropic-mythos-launch",
+  "meta": {
+    "subject": {
+      "type": "company",
+      "name": "Anthropic"
+    },
+    "location": [-122.42, 37.77],
+    "category": "tech",
+    "publishedAt": "2025-09-15",
+    "tags": ["AI", "SaaS", "기술파괴", "가상시나리오"]
+  },
+  "headline": {
+    "title": "Anthropic Model Mythos 출시",
+    "hook": "한 회사의 신제품이 전체 SaaS 산업을 흔들 수 있을까?"
+  },
+  "chain": {
+    "trigger": { "text": "Anthropic Model Mythos 공개", "sub": "트리거 (가상)" },
+    "steps": [
+      { "text": "기업 업무 자동화 범위 급확대", "sub": "1차 — 활용 영역 확장" },
+      { "text": "기존 SaaS 가치 재평가", "sub": "2차 — 시장 인식 변화" }
+    ],
+    "outcomes": [
+      { "text": "Adobe·Figma 주가 하락", "sub": "디자인 SW 위협", "impact": "negative" },
+      { "text": "보안 SaaS 주가 급락", "sub": "AI 보안으로 대체 우려", "impact": "negative" },
+      { "text": "AI 인프라 기업 강세", "sub": "수요 폭증", "impact": "positive" },
+      { "text": "Palantir 변동성 확대", "sub": "방향성 불확실", "impact": "neutral" }
+    ]
+  },
+  "story": {
+    "body": "이 시나리오는 가상 사례입니다. 실존 기업의 행동을 예측하는 것이 아니라, '한 AI 기업이 압도적 영향력을 가졌을 때 매크로가 어떻게 반응하는가'를 학습하기 위한 사고 실험입니다.\n\n매크로 관점에서 흥미로운 점은, 기술 파괴(disruption)는 금리나 환율 같은 전통적 변수와 다른 패턴을 만든다는 겁니다. 같은 산업 안에서 명확한 수혜자와 피해자가 갈리고, 그 경계선을 시장이 며칠 만에 그려냅니다.\n\n실제로 2022~2023년 ChatGPT 공개 직후 Chegg, Stack Overflow, 일부 카피라이팅 SaaS 주가가 단기간에 30~50% 빠진 사례가 있습니다. 시장은 '이 회사의 비즈니스 모델이 살아남을 수 있는가'를 빠르게 가격에 반영합니다.",
+    "keyTakeaway": "기술 파괴는 며칠 만에 시장의 승자와 패자를 가릅니다. 매크로가 못 따라잡는 빠른 변화입니다."
+  },
+  "supplements": {
+    "charts": [],
+    "sources": []
+  }
+}
