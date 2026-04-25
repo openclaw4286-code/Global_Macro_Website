@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CausalChain } from "@/components/CausalChain";
 import { CATEGORY_LABELS, type Lesson } from "@/schema/lesson";
 import { getAllLessonIds, getLessonById } from "@/lib/lessons";
 
@@ -46,9 +47,9 @@ export default function LessonPage({ params }: { params: { id: string } }) {
         <p className="mt-3 text-body-1 text-fg-muted">{headline.hook}</p>
       </header>
 
-      {/* TODO(2단계): 인과 다이어그램 — chain.trigger → steps[] → outcomes[] */}
-      <div className="mt-10 rounded-md border border-dashed border-line p-6 text-center text-caption text-fg-subtle">
-        인과 다이어그램은 2단계에서 추가
+      {/* 인과 다이어그램 — 화살표·범례·모바일 레이아웃은 2-A 다음 라운드 */}
+      <div className="mt-10">
+        <CausalChain lesson={lesson} />
       </div>
 
       <article className="mt-10 space-y-5">
