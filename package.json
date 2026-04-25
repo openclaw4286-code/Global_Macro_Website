@@ -6,7 +6,6 @@
     "dev": "next dev",
     "build": "npm run validate && next build",
     "start": "next start",
-    "lint": "next lint",
     "validate": "tsx scripts/validate-lessons.ts"
   },
   "dependencies": {
