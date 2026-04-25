@@ -1,30 +1,24 @@
+import { LessonCard } from "@/components/LessonCard";
+import { getAllLessons } from "@/lib/lessons";
+
 export default function Home() {
+  const lessons = getAllLessons();
+
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
-      <h1 className="text-display text-fg">macromap</h1>
-      <p className="text-body-1 text-fg-muted mt-3">
-        매크로경제 학습 사이트 — 1단계 스켈레톤
-      </p>
+      <header className="mb-10">
+        <h1 className="text-display text-fg">macromap</h1>
+        <p className="mt-3 text-body-1 text-fg-muted">
+          매크로경제 사건이 어떻게 시장과 일상으로 번지는지 따라가는 수업.
+        </p>
+      </header>
 
-      <section className="mt-8 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-md border border-line bg-surface p-6 shadow-elev-1">
-          <p className="text-heading-1 text-fg">surface 카드</p>
-          <p className="text-body-2 text-fg-muted mt-2">
-            토큰이 작동하면 흰색 배경, 옅은 보더, 그림자가 보입니다.
-          </p>
-        </div>
-        <div className="rounded-md border border-line bg-surface-sunken p-6">
-          <p className="text-heading-1 text-fg">surface-sunken</p>
-          <p className="text-body-2 text-fg-subtle mt-2">grey-100 톤</p>
-        </div>
-      </section>
+      {/* TODO(2단계): 지도(전 세계 핀) 자리 — 카드 리스트 위에 들어갈 예정 */}
 
-      <section className="mt-6 flex flex-wrap gap-3">
-        <span className="rounded-full bg-category-policy px-3 py-1 text-caption text-fg-inverted">policy</span>
-        <span className="rounded-full bg-category-trade px-3 py-1 text-caption text-fg-inverted">trade</span>
-        <span className="rounded-full bg-category-commodity px-3 py-1 text-caption text-fg-inverted">commodity</span>
-        <span className="rounded-full bg-category-risk px-3 py-1 text-caption text-fg-inverted">risk</span>
-        <span className="rounded-full bg-category-tech px-3 py-1 text-caption text-fg-inverted">tech</span>
+      <section className="grid gap-4 sm:grid-cols-2">
+        {lessons.map((lesson) => (
+          <LessonCard key={lesson.id} lesson={lesson} />
+        ))}
       </section>
     </main>
   );
