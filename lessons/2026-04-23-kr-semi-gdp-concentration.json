@@ -5,7 +5,7 @@
       "type": "sector",
       "name": "한국 반도체 산업 (HBM 중심)"
     },
-    "location": [127.5, 37.0],
+    "location": [127.5, 37.27],
     "category": "trade",
     "publishedAt": "2026-04-23",
     "tags": ["반도체", "HBM", "GDP", "산업집중", "교역조건"]
