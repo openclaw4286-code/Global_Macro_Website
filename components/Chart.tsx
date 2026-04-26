@@ -250,7 +250,6 @@ function BarChart({ chart }: { chart: ChartData }) {
               width={barW}
               height={h}
               fill="var(--accent-brand)"
-              fillOpacity={0.8}
               rx={2}
             />
           );
@@ -277,12 +276,13 @@ function BarChart({ chart }: { chart: ChartData }) {
 }
 
 // ─── 메인 분기 ──────────────────────────────────────────
-// figure는 본문·핵심 한 줄 박스와 위계가 평평해지지 않도록 카드 스타일을
-// 쓰지 않음. 차트와 본문 구분은 mt-10 여백 + label·caption만으로.
+// figure는 본문과 같은 폭으로 둠. p-5 들여쓰기를 하면 "차트가 본문보다 좁다"는
+// 인상이 생김 — 차트는 본문과 같은 폭이어야 한다.
+// 캡션·svg 사이 간격은 space-y로 처리.
 export function Chart({ chart }: { chart: ChartData }) {
   return (
-    <figure className="p-5">
-      <figcaption className="mb-3">
+    <figure className="space-y-2 px-0">
+      <figcaption>
         <h3 className="text-heading-2 text-fg">{chart.label}</h3>
         {chart.caption ? (
           <p className="mt-1 text-caption text-fg-muted">{chart.caption}</p>

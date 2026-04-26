@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CausalChain } from "@/components/CausalChain";
-import { Chart } from "@/components/Chart";
+import { ChartGrid } from "@/components/ChartGrid";
 import { CATEGORY_LABELS, type Lesson } from "@/schema/lesson";
 import { getAllLessonIds, getLessonById } from "@/lib/lessons";
 
@@ -66,13 +66,9 @@ export default function LessonPage({ params }: { params: { id: string } }) {
         <p className="mt-2 text-heading-1 text-fg">{story.keyTakeaway}</p>
       </aside>
 
-      {/* 차트 — 2-B 진행 중. 현재 line만 렌더, bar는 placeholder.
-          ChartGrid(2/3-up) 레이아웃은 마지막 라운드에서. */}
       {lesson.supplements.charts.length > 0 ? (
-        <section className="mt-10 space-y-4">
-          {lesson.supplements.charts.map((chart, i) => (
-            <Chart key={i} chart={chart} />
-          ))}
+        <section className="mt-10">
+          <ChartGrid charts={lesson.supplements.charts} />
         </section>
       ) : null}
     </main>
