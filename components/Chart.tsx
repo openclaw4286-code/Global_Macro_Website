@@ -3,7 +3,7 @@ import type { ChartData } from "@/schema/lesson";
 // ─── 차트 viewBox 및 패딩 (논리 좌표) ───────────────────
 const VIEW_W = 480;
 const VIEW_H = 280;
-const PAD_TOP = 28;     // value 라벨이 점 위에 들어갈 공간
+const PAD_TOP = 36;     // 값 라벨이 항상 plot 위 안전 영역에 자리잡도록 36
 const PAD_RIGHT = 24;
 const PAD_BOTTOM = 36;  // x-축 라벨 공간
 const PAD_LEFT = 56;    // y-축 tick 라벨 공간
@@ -14,9 +14,7 @@ const TICK_FS = 11;
 const VALUE_LABEL_FS = 11;
 const TICK_COUNT = 4;
 
-// ─── Nice tick 알고리즘 ─────────────────────────────────
-// 데이터 범위를 보고 0/25/50/75/100 같은 round 숫자로 tick 생성.
-// (Heckbert 1990 — graphics gems "Nice Numbers for Graph Labels")
+// ─── Nice tick 알고리즘 (Heckbert 1990) ─────────────────
 function niceNumber(value: number, round: boolean): number {
   if (value === 0) return 0;
   const exp = Math.floor(Math.log10(Math.abs(value)));
@@ -43,7 +41,6 @@ function niceTicks(min: number, max: number, count: number): {
   ticks: number[];
 } {
   if (min === max) {
-    // 모든 값이 같은 경우 — 위·아래 약간씩 padding.
     const pad = Math.abs(min) * 0.1 || 1;
     return niceTicks(min - pad, max + pad, count);
   }
@@ -52,7 +49,6 @@ function niceTicks(min: number, max: number, count: number): {
   const niceMin = Math.floor(min / step) * step;
   const niceMax = Math.ceil(max / step) * step;
   const ticks: number[] = [];
-  // float 누적 오차 방지
   for (let i = 0; i <= Math.round((niceMax - niceMin) / step); i++) {
     ticks.push(niceMin + i * step);
   }
@@ -62,7 +58,6 @@ function niceTicks(min: number, max: number, count: number): {
 // ─── 값 표기 ────────────────────────────────────────────
 function formatValue(v: number): string {
   if (Math.abs(v) >= 1000) return v.toLocaleString("en-US");
-  // 정수면 그대로, 아니면 소수점 1자리
   return Number.isInteger(v) ? String(v) : v.toFixed(1);
 }
 
@@ -75,33 +70,16 @@ function chartAriaLabel(chart: ChartData): string {
   return `${head}. 데이터: ${points}.`;
 }
 
-// ─── LineChart ──────────────────────────────────────────
-function LineChart({ chart }: { chart: ChartData }) {
-  const { values, xLabels } = chart;
-  const dataMin = Math.min(...values);
-  const dataMax = Math.max(...values);
-  const { min: yMin, max: yMax, ticks } = niceTicks(dataMin, dataMax, TICK_COUNT);
-
-  const xPx = (i: number) =>
-    PAD_LEFT + (values.length === 1 ? PLOT_W / 2 : (i / (values.length - 1)) * PLOT_W);
-  const yPx = (v: number) =>
-    PAD_TOP + PLOT_H - ((v - yMin) / (yMax - yMin)) * PLOT_H;
-
-  const linePath =
-    values
-      .map((v, i) => `${i === 0 ? "M" : "L"} ${xPx(i).toFixed(2)} ${yPx(v).toFixed(2)}`)
-      .join(" ");
-
+// ─── 공통: 격자 + y-tick 라벨 ──────────────────────────
+function GridAndYTicks({
+  ticks,
+  yPx,
+}: {
+  ticks: number[];
+  yPx: (v: number) => number;
+}) {
   return (
-    <svg
-      role="img"
-      aria-label={chartAriaLabel(chart)}
-      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-      width="100%"
-      height="auto"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      {/* 가로 격자선 (각 y-tick) */}
+    <>
       <g>
         {ticks.map((t, i) => {
           const y = yPx(t);
@@ -119,8 +97,6 @@ function LineChart({ chart }: { chart: ChartData }) {
           );
         })}
       </g>
-
-      {/* y-축 tick 라벨 */}
       <g>
         {ticks.map((t, i) => (
           <text
@@ -136,24 +112,61 @@ function LineChart({ chart }: { chart: ChartData }) {
           </text>
         ))}
       </g>
+    </>
+  );
+}
 
-      {/* x-축 라벨 */}
-      <g>
-        {xLabels.map((label, i) => (
-          <text
-            key={`xl-${i}`}
-            x={xPx(i)}
-            y={PAD_TOP + PLOT_H + 18}
-            textAnchor="middle"
-            fontSize={TICK_FS}
-            fill="var(--text-secondary)"
-          >
-            {label}
-          </text>
-        ))}
-      </g>
+// ─── 공통: x-축 라벨 (cx 배열을 받음) ─────────────────
+function XTickLabels({ xs, labels }: { xs: number[]; labels: string[] }) {
+  return (
+    <g>
+      {labels.map((label, i) => (
+        <text
+          key={`xl-${i}`}
+          x={xs[i]}
+          y={PAD_TOP + PLOT_H + 18}
+          textAnchor="middle"
+          fontSize={TICK_FS}
+          fill="var(--text-secondary)"
+        >
+          {label}
+        </text>
+      ))}
+    </g>
+  );
+}
 
-      {/* 데이터 라인 */}
+// ─── LineChart ──────────────────────────────────────────
+function LineChart({ chart }: { chart: ChartData }) {
+  const { values, xLabels } = chart;
+  const dataMin = Math.min(...values);
+  const dataMax = Math.max(...values);
+  const { min: yMin, max: yMax, ticks } = niceTicks(dataMin, dataMax, TICK_COUNT);
+
+  // line은 데이터 점이 plot 좌·우 끝에 닿음 (시계열 연속성 표현).
+  const xPx = (i: number) =>
+    PAD_LEFT + (values.length === 1 ? PLOT_W / 2 : (i / (values.length - 1)) * PLOT_W);
+  const yPx = (v: number) =>
+    PAD_TOP + PLOT_H - ((v - yMin) / (yMax - yMin)) * PLOT_H;
+
+  const linePath = values
+    .map((v, i) => `${i === 0 ? "M" : "L"} ${xPx(i).toFixed(2)} ${yPx(v).toFixed(2)}`)
+    .join(" ");
+
+  const xs = values.map((_, i) => xPx(i));
+
+  return (
+    <svg
+      role="img"
+      aria-label={chartAriaLabel(chart)}
+      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+      width="100%"
+      height="auto"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <GridAndYTicks ticks={ticks} yPx={yPx} />
+      <XTickLabels xs={xs} labels={xLabels} />
+
       <path
         d={linePath}
         fill="none"
@@ -163,7 +176,6 @@ function LineChart({ chart }: { chart: ChartData }) {
         strokeLinecap="round"
       />
 
-      {/* 데이터 점 */}
       <g>
         {values.map((v, i) => (
           <circle
@@ -178,7 +190,6 @@ function LineChart({ chart }: { chart: ChartData }) {
         ))}
       </g>
 
-      {/* 값 라벨 (각 점 위) */}
       <g>
         {values.map((v, i) => (
           <text
@@ -198,24 +209,86 @@ function LineChart({ chart }: { chart: ChartData }) {
   );
 }
 
+// ─── BarChart ───────────────────────────────────────────
+function BarChart({ chart }: { chart: ChartData }) {
+  const { values, xLabels } = chart;
+  const dataMax = Math.max(...values);
+  // bar는 항상 0 기준 (음수 데이터 등장 시 별도 처리 필요 — 현재 스키마는 number 그대로).
+  const { min: yMin, max: yMax, ticks } = niceTicks(0, dataMax, TICK_COUNT);
+
+  // bar는 카테고리. 각 데이터에 균등한 슬롯 할당, 슬롯 안 가운데에 막대.
+  const slotW = PLOT_W / values.length;
+  const barW = slotW * 0.6;
+  const slotCenter = (i: number) => PAD_LEFT + (i + 0.5) * slotW;
+  const yPx = (v: number) =>
+    PAD_TOP + PLOT_H - ((v - yMin) / (yMax - yMin)) * PLOT_H;
+
+  const xs = values.map((_, i) => slotCenter(i));
+
+  return (
+    <svg
+      role="img"
+      aria-label={chartAriaLabel(chart)}
+      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+      width="100%"
+      height="auto"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <GridAndYTicks ticks={ticks} yPx={yPx} />
+      <XTickLabels xs={xs} labels={xLabels} />
+
+      <g>
+        {values.map((v, i) => {
+          const top = yPx(v);
+          const h = PAD_TOP + PLOT_H - top;
+          if (h <= 0) return null;
+          return (
+            <rect
+              key={`bar-${i}`}
+              x={slotCenter(i) - barW / 2}
+              y={top}
+              width={barW}
+              height={h}
+              fill="var(--accent-brand)"
+              fillOpacity={0.8}
+              rx={2}
+            />
+          );
+        })}
+      </g>
+
+      <g>
+        {values.map((v, i) => (
+          <text
+            key={`vl-${i}`}
+            x={slotCenter(i)}
+            y={yPx(v) - 8}
+            textAnchor="middle"
+            fontSize={VALUE_LABEL_FS}
+            fontWeight={500}
+            fill="var(--text-primary)"
+          >
+            {formatValue(v)}
+          </text>
+        ))}
+      </g>
+    </svg>
+  );
+}
+
 // ─── 메인 분기 ──────────────────────────────────────────
-// bar는 다음 라운드. 그 전까진 이 컴포넌트에서 line만 처리.
+// figure는 본문·핵심 한 줄 박스와 위계가 평평해지지 않도록 카드 스타일을
+// 쓰지 않음. 차트와 본문 구분은 mt-10 여백 + label·caption만으로.
 export function Chart({ chart }: { chart: ChartData }) {
   return (
-    <figure className="rounded-md border border-line bg-surface p-5">
+    <figure className="p-5">
       <figcaption className="mb-3">
         <h3 className="text-heading-2 text-fg">{chart.label}</h3>
         {chart.caption ? (
           <p className="mt-1 text-caption text-fg-muted">{chart.caption}</p>
         ) : null}
       </figcaption>
-      {chart.type === "line" ? (
-        <LineChart chart={chart} />
-      ) : (
-        <div className="rounded-md border border-dashed border-line p-6 text-center text-caption text-fg-subtle">
-          bar 차트는 2-B 다음 라운드에서 추가
-        </div>
-      )}
+      {chart.type === "line" ? <LineChart chart={chart} /> : <BarChart chart={chart} />}
     </figure>
   );
 }
