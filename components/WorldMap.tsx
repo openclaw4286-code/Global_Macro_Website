@@ -14,10 +14,11 @@ import {
 
 const VIEW_W = 800;
 const VIEW_H = 400;
-// viewBox y 시작점을 -50 위로 끌어올려 지도를 화면 위쪽으로 이동.
-// 한국 핀(cy≈92)이 화면 정중앙보다 살짝 위에 자리잡고, 적도 부근 빈 바다를
+// viewBox y 시작점을 -100 위로 끌어올려 지도를 화면 위쪽으로 이동.
+// 핀 cy 범위 92~179 → 시각적 위치 (cy − VIEW_Y) / VIEW_H = 48~70%.
+// 한국 핀(cy≈92)이 화면 정중앙 살짝 위에 자리잡고, 적도 부근 빈 바다를
 // 화면 아래로 밀어낸다. 핀 cx·cy 자체는 동일 (rotate된 projection 결과).
-const VIEW_Y = -50;
+const VIEW_Y = -100;
 const PIN_R = 6;
 const PIN_RING = 2;
 const HIT_R = 14;        // 모바일 터치/포인터 hit 영역 반경 (투명)
