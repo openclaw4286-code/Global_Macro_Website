@@ -14,10 +14,6 @@ import {
 
 const VIEW_W = 800;
 const VIEW_H = 400;
-// viewBox y 시작점을 -50 위로 끌어올려 지도를 화면 위쪽으로 이동.
-// 한국 핀(cy≈92)이 화면 정중앙보다 살짝 위에 자리잡고, 적도 부근 빈 바다를
-// 화면 아래로 밀어낸다. 핀 cx·cy 자체는 동일 (rotate된 projection 결과).
-const VIEW_Y = -50;
 const PIN_R = 6;
 const PIN_RING = 2;
 const HIT_R = 14;        // 모바일 터치/포인터 hit 영역 반경 (투명)
@@ -30,11 +26,7 @@ const fc = feature(
   countriesData.objects.countries
 ) as unknown as FeatureCollection<Geometry, { name: string }>;
 
-// 동아시아 중심: 경도 127.5° (한반도 중앙) 으로 회전한 뒤 Sphere에 fit.
-// rotate 후 fitSize 호출 순서가 중요 — rotate 먼저 적용해야 회전된 sphere에 맞는 scale·translate가 계산됨.
-const projection = geoEqualEarth()
-  .rotate([-127.5, 0])
-  .fitSize([VIEW_W, VIEW_H], { type: "Sphere" });
+const projection = geoEqualEarth().fitSize([VIEW_W, VIEW_H], { type: "Sphere" });
 const path = geoPath(projection);
 const sphereD = path({ type: "Sphere" }) ?? "";
 const countryDs = fc.features.map((f) => path(f) ?? "").filter(Boolean);
@@ -66,7 +58,7 @@ function projectPins(lessons: Lesson[]): Pin[] {
       label: l.headline.title,
       category: CATEGORY_LABELS[l.meta.category],
       // 라벨이 우측 컨테이너 경계 침범 막기 위해 임계값 0.6×W (=480).
-      // 동아시아 중심(rotate −127.5°) 기준: Anthropic(620)만 좌측 flip 대상.
+      // BOK(656)·호르무즈(519) 둘 다 좌측 flip 대상.
       labelOnLeft: cx > VIEW_W * 0.6,
     });
   }
@@ -81,7 +73,7 @@ export function WorldMap({ lessons }: { lessons: Lesson[] }) {
     <svg
       role="img"
       aria-label={ariaLabel}
-      viewBox={`0 ${VIEW_Y} ${VIEW_W} ${VIEW_H}`}
+      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
       width="100%"
       height="auto"
       xmlns="http://www.w3.org/2000/svg"

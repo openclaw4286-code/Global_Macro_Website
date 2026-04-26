@@ -1,4 +1,4 @@
-import { IMPACT_COLORS, type ChartData } from "@/schema/lesson";
+import type { ChartData } from "@/schema/lesson";
 
 // ─── 차트 viewBox 및 패딩 (논리 좌표) ───────────────────
 const VIEW_W = 480;
@@ -71,11 +71,6 @@ function chartAriaLabel(chart: ChartData): string {
 }
 
 // ─── 공통: 격자 + y-tick 라벨 ──────────────────────────
-// 0이 tick에 포함되면 0 라인을 다른 격자선보다 시각적으로 진하게 그려
-// 양수·음수 영역의 기준선 역할을 명시. (음수 막대 차트의 핵심 시각 요소.)
-//
-// 0 라인은 stroke-width 1.5px로 강조하지만, viewBox 스케일링으로
-// 실제 화면에서는 격자선보다 살짝 진한 정도로 표현됨. 의도된 시각 효과.
 function GridAndYTicks({
   ticks,
   yPx,
@@ -88,7 +83,6 @@ function GridAndYTicks({
       <g>
         {ticks.map((t, i) => {
           const y = yPx(t);
-          const isZero = t === 0;
           return (
             <line
               key={`grid-${i}`}
@@ -96,10 +90,9 @@ function GridAndYTicks({
               x2={PAD_LEFT + PLOT_W}
               y1={y}
               y2={y}
-              stroke={isZero ? "var(--border-default)" : "var(--border-subtle)"}
-              strokeOpacity={isZero ? 0.6 : 1}
-              strokeWidth={isZero ? 1.5 : 1}
-              strokeDasharray={isZero ? undefined : "2 3"}
+              stroke="var(--border-subtle)"
+              strokeWidth={1}
+              strokeDasharray="2 3"
             />
           );
         })}
@@ -219,15 +212,9 @@ function LineChart({ chart }: { chart: ChartData }) {
 // ─── BarChart ───────────────────────────────────────────
 function BarChart({ chart }: { chart: ChartData }) {
   const { values, xLabels } = chart;
-  const dataMin = Math.min(...values);
   const dataMax = Math.max(...values);
-  // 양수만 있을 때는 yMin=0 유지, 음수가 있을 때만 niceMin이 0 아래로 내려감.
-  // (양수만 있을 때 yMin이 음수로 내려가면 0과 dataMin 사이 빈 공간이 생겨 어색.)
-  const { min: yMin, max: yMax, ticks } = niceTicks(
-    Math.min(0, dataMin),
-    Math.max(0, dataMax),
-    TICK_COUNT
-  );
+  // bar는 항상 0 기준 (음수 데이터 등장 시 별도 처리 필요 — 현재 스키마는 number 그대로).
+  const { min: yMin, max: yMax, ticks } = niceTicks(0, dataMax, TICK_COUNT);
 
   // bar는 카테고리. 각 데이터에 균등한 슬롯 할당, 슬롯 안 가운데에 막대.
   const slotW = PLOT_W / values.length;
@@ -235,7 +222,6 @@ function BarChart({ chart }: { chart: ChartData }) {
   const slotCenter = (i: number) => PAD_LEFT + (i + 0.5) * slotW;
   const yPx = (v: number) =>
     PAD_TOP + PLOT_H - ((v - yMin) / (yMax - yMin)) * PLOT_H;
-  const baseY = yPx(0); // 0 기준선의 픽셀 y 좌표
 
   const xs = values.map((_, i) => slotCenter(i));
 
@@ -253,11 +239,8 @@ function BarChart({ chart }: { chart: ChartData }) {
 
       <g>
         {values.map((v, i) => {
-          // 양수: 막대 top=yPx(v), bottom=baseY → height = baseY - yPx(v)
-          // 음수: 막대 top=baseY, bottom=yPx(v) → height = yPx(v) - baseY
-          const isNeg = v < 0;
-          const top = isNeg ? baseY : yPx(v);
-          const h = isNeg ? yPx(v) - baseY : baseY - yPx(v);
+          const top = yPx(v);
+          const h = PAD_TOP + PLOT_H - top;
           if (h <= 0) return null;
           return (
             <rect
@@ -266,7 +249,7 @@ function BarChart({ chart }: { chart: ChartData }) {
               y={top}
               width={barW}
               height={h}
-              fill={isNeg ? IMPACT_COLORS.negative : "var(--accent-brand)"}
+              fill="var(--accent-brand)"
               rx={2}
             />
           );
@@ -274,25 +257,19 @@ function BarChart({ chart }: { chart: ChartData }) {
       </g>
 
       <g>
-        {values.map((v, i) => {
-          // 라벨은 막대 바깥쪽에 — 양수면 위, 음수면 아래.
-          const isNeg = v < 0;
-          const labelY = isNeg ? yPx(v) + 8 : yPx(v) - 8;
-          return (
-            <text
-              key={`vl-${i}`}
-              x={slotCenter(i)}
-              y={labelY}
-              textAnchor="middle"
-              dominantBaseline={isNeg ? "hanging" : "auto"}
-              fontSize={VALUE_LABEL_FS}
-              fontWeight={500}
-              fill="var(--text-primary)"
-            >
-              {formatValue(v)}
-            </text>
-          );
-        })}
+        {values.map((v, i) => (
+          <text
+            key={`vl-${i}`}
+            x={slotCenter(i)}
+            y={yPx(v) - 8}
+            textAnchor="middle"
+            fontSize={VALUE_LABEL_FS}
+            fontWeight={500}
+            fill="var(--text-primary)"
+          >
+            {formatValue(v)}
+          </text>
+        ))}
       </g>
     </svg>
   );
