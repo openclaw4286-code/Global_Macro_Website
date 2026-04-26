@@ -42,6 +42,8 @@ type Pin = {
 };
 
 function projectPins(lessons: Lesson[]): Pin[] {
+  // 같은 지역에 lesson 다수 등장 시 jitter 또는 클러스터링 필요.
+  // 현재 4 lesson 규모에서는 미해당.
   const out: Pin[] = [];
   for (const l of lessons) {
     if (!l.meta.location) continue;
@@ -55,7 +57,9 @@ function projectPins(lessons: Lesson[]): Pin[] {
       color: CATEGORY_COLORS[l.meta.category],
       label: l.headline.title,
       category: CATEGORY_LABELS[l.meta.category],
-      labelOnLeft: cx > VIEW_W * 0.7,
+      // 라벨이 우측 컨테이너 경계 침범 막기 위해 임계값 0.6×W (=480).
+      // BOK(656)·호르무즈(519) 둘 다 좌측 flip 대상.
+      labelOnLeft: cx > VIEW_W * 0.6,
     });
   }
   return out;
@@ -118,7 +122,9 @@ export function WorldMap({ lessons }: { lessons: Lesson[] }) {
                 stroke="var(--surface)"
                 strokeWidth={PIN_RING}
               />
-              {/* hover 시 나타나는 제목 */}
+              {/* hover 시 나타나는 제목.
+                  halo: stroke-width 3px (paint-order=stroke로 stroke 먼저 그림).
+                  가독성 이슈 시 4~5px로 키우거나 배경 rect 추가 검토. */}
               <text
                 x={labelX}
                 y={p.cy}
