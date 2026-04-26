@@ -386,11 +386,13 @@ function MobileOutcomeGroups({ outcomes }: { outcomes: Outcome[] }) {
   return (
     <div>
       {groups.map((g, gi) => {
-        const isNeutral = g.impact === "neutral";
-        const borderColor = isNeutral
-          ? "var(--border-strong)"
-          : IMPACT_COLORS[g.impact];
-        const bgColor = isNeutral ? "var(--surface-sunken)" : "var(--surface)";
+        // 좌측 4px 막대 색만 impact로 변주. 나머지(bg·gray border·라운드·padding·텍스트)는
+        // SVG trigger·step 박스(neutralStyle)와 동일하게 — 모바일 사슬과 outcome 카드의
+        // 시각적 연속성 확보. neutral은 분류 없음 → 좌측 막대도 약한 회색.
+        const sideBarColor =
+          g.impact === "neutral"
+            ? "var(--border-default)"
+            : IMPACT_COLORS[g.impact];
         return (
           <section key={g.impact} className={gi === 0 ? "" : "mt-6"}>
             <h3 className="flex items-center gap-2 text-label text-fg">
@@ -406,8 +408,8 @@ function MobileOutcomeGroups({ outcomes }: { outcomes: Outcome[] }) {
               {g.items.map((o, i) => (
                 <li
                   key={i}
-                  className="rounded-lg border px-4 py-3"
-                  style={{ borderColor, backgroundColor: bgColor }}
+                  className="rounded-sm border border-l-4 border-line-strong bg-surface-sunken px-4 py-3 text-center"
+                  style={{ borderLeftColor: sideBarColor }}
                 >
                   <div className="text-label text-fg">{o.text}</div>
                   <div className="mt-1 text-caption text-fg-muted">{o.sub}</div>

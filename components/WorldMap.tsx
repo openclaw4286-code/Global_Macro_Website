@@ -14,6 +14,10 @@ import {
 
 const VIEW_W = 800;
 const VIEW_H = 400;
+// viewBox y 시작점을 -50 위로 끌어올려 지도를 화면 위쪽으로 이동.
+// 한국 핀(cy≈92)이 화면 정중앙보다 살짝 위에 자리잡고, 적도 부근 빈 바다를
+// 화면 아래로 밀어낸다. 핀 cx·cy 자체는 동일 (rotate된 projection 결과).
+const VIEW_Y = -50;
 const PIN_R = 6;
 const PIN_RING = 2;
 const HIT_R = 14;        // 모바일 터치/포인터 hit 영역 반경 (투명)
@@ -77,7 +81,7 @@ export function WorldMap({ lessons }: { lessons: Lesson[] }) {
     <svg
       role="img"
       aria-label={ariaLabel}
-      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+      viewBox={`0 ${VIEW_Y} ${VIEW_W} ${VIEW_H}`}
       width="100%"
       height="auto"
       xmlns="http://www.w3.org/2000/svg"

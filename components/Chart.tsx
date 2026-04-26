@@ -73,6 +73,9 @@ function chartAriaLabel(chart: ChartData): string {
 // ─── 공통: 격자 + y-tick 라벨 ──────────────────────────
 // 0이 tick에 포함되면 0 라인을 다른 격자선보다 시각적으로 진하게 그려
 // 양수·음수 영역의 기준선 역할을 명시. (음수 막대 차트의 핵심 시각 요소.)
+//
+// 0 라인은 stroke-width 1.5px로 강조하지만, viewBox 스케일링으로
+// 실제 화면에서는 격자선보다 살짝 진한 정도로 표현됨. 의도된 시각 효과.
 function GridAndYTicks({
   ticks,
   yPx,
