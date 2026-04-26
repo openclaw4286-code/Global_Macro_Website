@@ -26,7 +26,11 @@ const fc = feature(
   countriesData.objects.countries
 ) as unknown as FeatureCollection<Geometry, { name: string }>;
 
-const projection = geoEqualEarth().fitSize([VIEW_W, VIEW_H], { type: "Sphere" });
+// 동아시아 중심: 경도 127.5° (한반도 중앙) 으로 회전한 뒤 Sphere에 fit.
+// rotate 후 fitSize 호출 순서가 중요 — rotate 먼저 적용해야 회전된 sphere에 맞는 scale·translate가 계산됨.
+const projection = geoEqualEarth()
+  .rotate([-127.5, 0])
+  .fitSize([VIEW_W, VIEW_H], { type: "Sphere" });
 const path = geoPath(projection);
 const sphereD = path({ type: "Sphere" }) ?? "";
 const countryDs = fc.features.map((f) => path(f) ?? "").filter(Boolean);
@@ -58,7 +62,7 @@ function projectPins(lessons: Lesson[]): Pin[] {
       label: l.headline.title,
       category: CATEGORY_LABELS[l.meta.category],
       // 라벨이 우측 컨테이너 경계 침범 막기 위해 임계값 0.6×W (=480).
-      // BOK(656)·호르무즈(519) 둘 다 좌측 flip 대상.
+      // 동아시아 중심(rotate −127.5°) 기준: Anthropic(620)만 좌측 flip 대상.
       labelOnLeft: cx > VIEW_W * 0.6,
     });
   }
