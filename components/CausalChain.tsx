@@ -135,19 +135,21 @@ function neutralStyle(): BoxStyle {
     stroke: "var(--border-strong)",
     textColor: "var(--text-primary)",
     subColor: "var(--text-secondary)",
-    strokeWidth: 0.5,
+    strokeWidth: 1,
   };
 }
 
 function outcomeStyle(impact: Outcome["impact"]): BoxStyle {
-  // impact가 neutral이면 회색 박스 (trigger/steps와 동일).
+  // neutral은 trigger/steps와 동일한 회색 박스.
   if (impact === "neutral") return neutralStyle();
-  // positive/negative는 IMPACT_COLORS hex로 stroke + 옅은 배경. 텍스트는 진한 동색 톤.
-  const accent = IMPACT_COLORS[impact];
+  // positive/negative: stroke만 IMPACT_COLORS의 hex로 강조.
+  // 텍스트는 가독성 우선으로 var(--text-primary) — stroke 색 hex는
+  // 흰 배경 대비 WCAG AA 본문 기준(4.5:1)을 만족하지 못함.
+  // 색 정체성은 stroke가, 가독성은 텍스트가 담당하도록 역할 분리.
   return {
     fill: "var(--surface)",
-    stroke: accent,
-    textColor: accent,
+    stroke: IMPACT_COLORS[impact],
+    textColor: "var(--text-primary)",
     subColor: "var(--text-secondary)",
     strokeWidth: 1,
   };
