@@ -316,36 +316,30 @@ function desktopArrows(d: ReturnType<typeof layoutDesktop>): string[] {
   return arrows;
 }
 
-// ─── 모바일 레이아웃 ───────────────────────────────────
-function layoutMobile(chain: CausalChainType) {
+// ─── 모바일 레이아웃 (trigger + steps만) ────────────────
+// outcomes는 SVG 외부 HTML 그룹(MobileOutcomeGroups)에서 impact별로 묶어 렌더.
+// 분리 이유:
+//  1) 그룹 헤더(impact dot + 라벨 + 개수)를 시맨틱 <h3>·<ul>로 표현 → 접근성 향상
+//  2) outcome이 4+개일 때 모바일 단일 SVG 세로 스택은 화면을 너무 길게 만듦
+//  3) impact별 그룹화는 색상에만 의존하지 않는 분류 정보 제공
+function layoutMobileChain(chain: CausalChainType) {
   const triggerL = layoutBox(chain.trigger);
   const stepLs = chain.steps.map(layoutBox);
-  const outcomeLs = chain.outcomes.map(layoutBox);
 
-  const totalW = Math.max(
-    triggerL.width,
-    ...stepLs.map((l) => l.width),
-    ...outcomeLs.map((l) => l.width)
-  );
+  const totalW = Math.max(triggerL.width, ...stepLs.map((l) => l.width));
 
   let cy = 0;
   const triggerY = cy;
   cy += triggerL.height + MOBILE_SECTION_GAP;
 
   const stepYs: number[] = [];
-  for (const sl of stepLs) {
+  for (let i = 0; i < stepLs.length; i++) {
     stepYs.push(cy);
-    cy += sl.height + MOBILE_SECTION_GAP;
+    cy += stepLs[i].height;
+    // 마지막 step 이후엔 SECTION_GAP 대신 FANOUT_GAP — outcome 그룹으로의
+    // stub 화살표가 차지할 공간.
+    cy += i === stepLs.length - 1 ? MOBILE_FANOUT_GAP : MOBILE_SECTION_GAP;
   }
-  // 마지막 step 이후엔 SECTION_GAP 대신 FANOUT_GAP.
-  cy = cy - MOBILE_SECTION_GAP + MOBILE_FANOUT_GAP;
-
-  const outcomeYs: number[] = [];
-  for (const ol of outcomeLs) {
-    outcomeYs.push(cy);
-    cy += ol.height + OUTCOME_GAP;
-  }
-  cy -= OUTCOME_GAP;
 
   const centerX = (l: BoxLayout) => (totalW - l.width) / 2;
 
@@ -358,27 +352,75 @@ function layoutMobile(chain: CausalChainType) {
       x: centerX(l),
       y: stepYs[i],
     })) as Placement[],
-    outcomes: outcomeLs.map((l, i) => ({
-      layout: l,
-      x: centerX(l),
-      y: outcomeYs[i],
-    })) as Placement[],
   };
 }
 
-function mobileArrows(m: ReturnType<typeof layoutMobile>): string[] {
+function mobileChainArrows(m: ReturnType<typeof layoutMobileChain>): string[] {
   const arrows: string[] = [];
   const seq: Placement[] = [m.trigger, ...m.steps];
   for (let i = 0; i < seq.length - 1; i++) {
     arrows.push(bezierV(fromBottom(seq[i]), toTop(seq[i + 1])));
   }
-  // 모바일에서는 lastStep에서 outcomes 블록으로 가는 단일 화살표만 그림.
-  // 4+ outcomes를 화살표로 일일이 연결하면 시각적으로 혼잡해지고
-  // outcomes가 더 아래 박스 위로 화살표가 지나가게 됨. 첫 outcome으로
-  // 가는 단일 화살표가 "여기서부터 결과 목록"임을 시각적으로 표현.
+  // 마지막 step에서 outcome 그룹(SVG 아래 HTML)으로 향하는 stub 화살표.
+  // SVG 하단까지 짧게 그어 흐름이 다음 섹션으로 이어짐을 시각적으로 표현.
   const last = seq[seq.length - 1];
-  arrows.push(bezierV(fromBottom(last), toTop(m.outcomes[0])));
+  const stubFrom = fromBottom(last);
+  const stubTo = { x: stubFrom.x, y: m.height - ARROW_GAP };
+  arrows.push(bezierV(stubFrom, stubTo));
   return arrows;
+}
+
+// ─── 모바일 outcome 그룹 (HTML) ────────────────────────
+// SVG 박스 스타일을 시맨틱 <ul>/<li>로 옮긴 것:
+//  border 색 = impact 색 (neutral은 border-strong)
+//  background = surface (neutral은 surface-sunken)
+//  텍스트 사이즈는 SVG와 동일 (label 13px / caption 12px)
+const MOBILE_GROUP_ORDER: Outcome["impact"][] = ["positive", "negative", "neutral"];
+
+function MobileOutcomeGroups({ outcomes }: { outcomes: Outcome[] }) {
+  const groups = MOBILE_GROUP_ORDER.map((impact) => ({
+    impact,
+    items: outcomes.filter((o) => o.impact === impact),
+  })).filter((g) => g.items.length > 0);
+
+  return (
+    <div>
+      {groups.map((g, gi) => {
+        // 좌측 4px 막대 색만 impact로 변주. 나머지(bg·gray border·라운드·padding·텍스트)는
+        // SVG trigger·step 박스(neutralStyle)와 동일하게 — 모바일 사슬과 outcome 카드의
+        // 시각적 연속성 확보. neutral은 분류 없음 → 좌측 막대도 약한 회색.
+        const sideBarColor =
+          g.impact === "neutral"
+            ? "var(--border-default)"
+            : IMPACT_COLORS[g.impact];
+        return (
+          <section key={g.impact} className={gi === 0 ? "" : "mt-6"}>
+            <h3 className="flex items-center gap-2 text-label text-fg">
+              <span
+                aria-hidden
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: IMPACT_COLORS[g.impact] }}
+              />
+              <span>{IMPACT_LABELS[g.impact]}</span>
+              <span className="text-fg-muted">({g.items.length})</span>
+            </h3>
+            <ul className="mt-2 flex flex-col gap-2">
+              {g.items.map((o, i) => (
+                <li
+                  key={i}
+                  className="rounded-sm border border-l-4 border-line-strong bg-surface-sunken px-4 py-3 text-center"
+                  style={{ borderLeftColor: sideBarColor }}
+                >
+                  <div className="text-label text-fg">{o.text}</div>
+                  <div className="mt-1 text-caption text-fg-muted">{o.sub}</div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })}
+    </div>
+  );
 }
 
 // ─── 범례 ──────────────────────────────────────────────
@@ -464,9 +506,9 @@ function accessibleDescription(chain: CausalChainType): string {
 export function CausalChain({ lesson }: { lesson: Lesson }) {
   const { chain, headline } = lesson;
   const desktop = layoutDesktop(chain);
-  const mobile = layoutMobile(chain);
+  const mobile = layoutMobileChain(chain);
   const dArrows = desktopArrows(desktop);
-  const mArrows = mobileArrows(mobile);
+  const mArrows = mobileChainArrows(mobile);
   const ariaLabel = `인과 다이어그램 — ${headline.title}. ${accessibleDescription(chain)}`;
   const dMarker = `arrow-d-${lesson.id}`;
   const mMarker = `arrow-m-${lesson.id}`;
@@ -499,7 +541,7 @@ export function CausalChain({ lesson }: { lesson: Lesson }) {
         </svg>
       </div>
 
-      {/* 모바일 (sm 미만): 세로 레이아웃 */}
+      {/* 모바일 (sm 미만): SVG 사슬 + HTML 그룹 outcomes */}
       <div className="block sm:hidden">
         <svg
           role="img"
@@ -515,14 +557,11 @@ export function CausalChain({ lesson }: { lesson: Lesson }) {
           {mobile.steps.map((p, i) => (
             <Box key={i} {...p} style={neutralStyle()} />
           ))}
-          {mobile.outcomes.map((p, i) => (
-            <Box
-              key={i}
-              {...p}
-              style={outcomeStyle(chain.outcomes[i].impact)}
-            />
-          ))}
         </svg>
+        {/* 분기 시점: SVG 끝에 stub 화살표 + 충분한 여백으로 시각적 구분 */}
+        <div className="mt-6">
+          <MobileOutcomeGroups outcomes={chain.outcomes} />
+        </div>
       </div>
 
       <Legend outcomes={chain.outcomes} />
