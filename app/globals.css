@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Stage 1: light mode only.
+ * 다크모드는 [data-theme="dark"]로 활성화. 자동전환은 추후 작업.
+ * (908-doha-ui/styles/908-doha.tokens.css 안의 다크 변수 블록은 그대로 보존)
+ */
