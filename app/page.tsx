@@ -1,4 +1,5 @@
 import { LessonCard } from "@/components/LessonCard";
+import { WorldMap } from "@/components/WorldMap";
 import { getAllLessons } from "@/lib/lessons";
 
 export default function Home() {
@@ -13,7 +14,11 @@ export default function Home() {
         </p>
       </header>
 
-      {/* TODO(2단계): 지도(전 세계 핀) 자리 — 카드 리스트 위에 들어갈 예정 */}
+      {/* 지도: lg(1024px+)에서만 표시. sm·md에서는 핀 간격이 너무 가까워
+          클릭이 어렵기 때문에 숨김. 카드 리스트가 모바일의 주요 진입점. */}
+      <div className="mb-12 hidden lg:block">
+        <WorldMap lessons={lessons} />
+      </div>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {lessons.map((lesson) => (
