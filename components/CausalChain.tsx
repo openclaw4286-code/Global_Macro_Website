@@ -546,13 +546,9 @@ export function CausalChain({ lesson }: { lesson: Lesson }) {
       </div>
 
       {/* 모바일 (sm 미만): SVG 사슬 + HTML 그룹 outcomes.
-          mx-auto + max-w로 SVG와 outcome 그룹을 같은 폭으로 묶어 중앙 정렬.
-          SVG는 width="100%"이므로 부모 너비를 그대로 받고, outcome <ul>·<li>도
-          부모를 채우므로 같은 폭이 된다. MAX_BOX_W를 단일 출처로 사용. */}
-      <div
-        className="block sm:hidden mx-auto"
-        style={{ maxWidth: MAX_BOX_W }}
-      >
+          폭은 부모 컨테이너(lesson page의 max-w-2xl px-6)가 결정 — SVG와
+          outcome <ul>/<li> 모두 같은 부모 너비를 채우므로 자동 정렬된다. */}
+      <div className="block sm:hidden">
         <svg
           role="img"
           aria-label={ariaLabel}
