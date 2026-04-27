@@ -13,7 +13,10 @@ const TEXT_LH = 18;
 const SUB_FS = 12;        // text-caption
 const SUB_LH = 16;
 const PAD_X = 16;
-const PAD_Y = 12;
+// 박스 세로 padding은 호출처별로 다르게 — 데스크톱은 시각적 무게가 필요하지만,
+// 모바일은 outcome HTML 카드(py-3)와 시각 무게를 맞추기 위해 더 작게.
+const DESKTOP_PAD_Y = 12;
+const MOBILE_PAD_Y = 10;
 const TEXT_SUB_GAP = 4;
 const MAX_LINES = 2;
 
@@ -21,7 +24,7 @@ const MIN_BOX_W = 100;
 const MAX_BOX_W = 240;
 const COL_GAP = 56;       // 데스크톱 컬럼 간격
 const OUTCOME_GAP = 12;   // outcome 박스 세로 간격
-const MOBILE_SECTION_GAP = 36; // 모바일 섹션 간격 (화살표 공간)
+const MOBILE_SECTION_GAP = 32; // 모바일 섹션 간격 (화살표 공간)
 const MOBILE_FANOUT_GAP = 28;  // 모바일 lastStep → outcomes 간격
 
 const STROKE_W = 1;
@@ -93,9 +96,10 @@ type BoxLayout = {
   subLines: string[];
   width: number;
   height: number;
+  padY: number;
 };
 
-function layoutBox(node: ChainNode): BoxLayout {
+function layoutBox(node: ChainNode, padY: number = DESKTOP_PAD_Y): BoxLayout {
   const innerMax = MAX_BOX_W - PAD_X * 2;
   const textLines = wrapLines(node.text, TEXT_FS, innerMax);
   const subLines = wrapLines(node.sub, SUB_FS, innerMax);
@@ -105,12 +109,12 @@ function layoutBox(node: ChainNode): BoxLayout {
   );
   const width = Math.min(MAX_BOX_W, Math.max(MIN_BOX_W, Math.ceil(widest) + PAD_X * 2));
   const height =
-    PAD_Y +
+    padY +
     textLines.length * TEXT_LH +
     TEXT_SUB_GAP +
     subLines.length * SUB_LH +
-    PAD_Y;
-  return { textLines, subLines, width, height };
+    padY;
+  return { textLines, subLines, width, height, padY };
 }
 
 // ─── 색 매핑 ─────────────────────────────────────────────
@@ -157,10 +161,10 @@ function Box({
   layout: BoxLayout;
   style: BoxStyle;
 }) {
-  const { width, height, textLines, subLines } = layout;
-  const textBlockY = y + PAD_Y + TEXT_FS;
+  const { width, height, textLines, subLines, padY } = layout;
+  const textBlockY = y + padY + TEXT_FS;
   const subBlockY =
-    y + PAD_Y + textLines.length * TEXT_LH + TEXT_SUB_GAP + SUB_FS;
+    y + padY + textLines.length * TEXT_LH + TEXT_SUB_GAP + SUB_FS;
 
   return (
     <g>
@@ -245,8 +249,8 @@ const toTop = (p: Placement): Pt => ({
 // ─── 데스크톱 레이아웃 ─────────────────────────────────
 function layoutDesktop(chain: CausalChainType) {
   const triggerL = layoutBox(chain.trigger);
-  const stepLs = chain.steps.map(layoutBox);
-  const outcomeLs = chain.outcomes.map(layoutBox);
+  const stepLs = chain.steps.map((s) => layoutBox(s));
+  const outcomeLs = chain.outcomes.map((o) => layoutBox(o));
 
   const outcomeColW = Math.max(...outcomeLs.map((l) => l.width));
   const outcomesTotalH =
@@ -323,8 +327,8 @@ function desktopArrows(d: ReturnType<typeof layoutDesktop>): string[] {
 //  2) outcome이 4+개일 때 모바일 단일 SVG 세로 스택은 화면을 너무 길게 만듦
 //  3) impact별 그룹화는 색상에만 의존하지 않는 분류 정보 제공
 function layoutMobileChain(chain: CausalChainType) {
-  const triggerL = layoutBox(chain.trigger);
-  const stepLs = chain.steps.map(layoutBox);
+  const triggerL = layoutBox(chain.trigger, MOBILE_PAD_Y);
+  const stepLs = chain.steps.map((s) => layoutBox(s, MOBILE_PAD_Y));
 
   const totalW = Math.max(triggerL.width, ...stepLs.map((l) => l.width));
 
@@ -541,8 +545,13 @@ export function CausalChain({ lesson }: { lesson: Lesson }) {
         </svg>
       </div>
 
-      {/* 모바일 (sm 미만): SVG 사슬 + HTML 그룹 outcomes */}
-      <div className="block sm:hidden">
+      {/* 모바일 (sm 미만): SVG 사슬 + HTML 그룹 outcomes.
+          280px max + mx-auto로 좌우 여백 확보. SVG(width=100%)와 outcome
+          <ul>/<li>가 같은 부모를 채우므로 둘 다 280px로 정렬된다. */}
+      <div
+        className="block sm:hidden mx-auto"
+        style={{ maxWidth: 280 }}
+      >
         <svg
           role="img"
           aria-label={ariaLabel}

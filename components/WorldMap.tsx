@@ -13,11 +13,18 @@ import {
 } from "@/schema/lesson";
 
 const VIEW_W = 800;
-const VIEW_H = 400;
-// viewBox y 시작점을 -50 위로 끌어올려 지도를 화면 위쪽으로 이동.
-// 한국 핀(cy≈92)이 화면 정중앙보다 살짝 위에 자리잡고, 적도 부근 빈 바다를
+// 투영이 fit되는 박스 높이. 핀 좌표 안정성을 위해 고정 — viewBox 높이와 분리.
+// 이 값을 바꾸면 projection.fitSize 결과가 변해 sphere 크기와 모든 핀 cx/cy가
+// 재계산된다. 의도적으로 sphere를 더 크게/작게 하려는 게 아니면 건드리지 말 것.
+const FIT_H = 400;
+// SVG viewBox height. sphere(y≈5~395)가 통째로 들어갈 만큼 + VIEW_Y(-100) 위쪽
+// 마진을 합한 값. viewBox y 범위 -100~380 → sphere 5~395 모두 가시. 5:3 비율.
+const VIEW_H = 480;
+// viewBox y 시작점을 -100 위로 끌어올려 지도를 화면 위쪽으로 이동.
+// 핀 cy 범위 92~179 → 시각적 위치 (cy − VIEW_Y) / VIEW_H = 48~70%.
+// 한국 핀(cy≈92)이 화면 정중앙 살짝 위에 자리잡고, 적도 부근 빈 바다를
 // 화면 아래로 밀어낸다. 핀 cx·cy 자체는 동일 (rotate된 projection 결과).
-const VIEW_Y = -50;
+const VIEW_Y = -100;
 const PIN_R = 6;
 const PIN_RING = 2;
 const HIT_R = 14;        // 모바일 터치/포인터 hit 영역 반경 (투명)
@@ -34,7 +41,7 @@ const fc = feature(
 // rotate 후 fitSize 호출 순서가 중요 — rotate 먼저 적용해야 회전된 sphere에 맞는 scale·translate가 계산됨.
 const projection = geoEqualEarth()
   .rotate([-127.5, 0])
-  .fitSize([VIEW_W, VIEW_H], { type: "Sphere" });
+  .fitSize([VIEW_W, FIT_H], { type: "Sphere" });
 const path = geoPath(projection);
 const sphereD = path({ type: "Sphere" }) ?? "";
 const countryDs = fc.features.map((f) => path(f) ?? "").filter(Boolean);
