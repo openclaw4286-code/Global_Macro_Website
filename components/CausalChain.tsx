@@ -6,6 +6,7 @@ import {
   type Lesson,
   type Outcome,
 } from "@/schema/lesson";
+import { CausalChainZoomButton } from "@/components/CausalChainZoomButton";
 
 // ─── 레이아웃 상수 ───────────────────────────────────────
 const TEXT_FS = 13;       // text-label
@@ -499,6 +500,48 @@ function accessibleDescription(chain: CausalChainType): string {
   return parts.join(". ") + ".";
 }
 
+// ─── 데스크톱 SVG (인라인·모달에서 공용) ─────────────────
+// idSuffix로 marker id를 네임스페이스. 한 페이지에 인라인 + 모달 두 SVG가
+// 동시에 존재할 수 있으므로 marker id 충돌을 피하려고 분리.
+export function DesktopChainSvg({
+  lesson,
+  idSuffix = "d",
+  ariaLabelOverride,
+}: {
+  lesson: Lesson;
+  idSuffix?: string;
+  ariaLabelOverride?: string;
+}) {
+  const { chain, headline } = lesson;
+  const desktop = layoutDesktop(chain);
+  const dArrows = desktopArrows(desktop);
+  const ariaLabel =
+    ariaLabelOverride ??
+    `인과 다이어그램 — ${headline.title}. ${accessibleDescription(chain)}`;
+  const marker = `arrow-${idSuffix}-${lesson.id}`;
+
+  return (
+    <svg
+      role="img"
+      aria-label={ariaLabel}
+      viewBox={`0 0 ${desktop.width} ${desktop.height}`}
+      width="100%"
+      height="auto"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <ArrowMarker id={marker} />
+      <Arrows paths={dArrows} markerId={marker} />
+      <Box {...desktop.trigger} style={neutralStyle()} />
+      {desktop.steps.map((p, i) => (
+        <Box key={i} {...p} style={neutralStyle()} />
+      ))}
+      {desktop.outcomes.map((p, i) => (
+        <Box key={i} {...p} style={outcomeStyle(chain.outcomes[i].impact)} />
+      ))}
+    </svg>
+  );
+}
+
 // ─── 메인 컴포넌트 ───────────────────────────────────────
 // 주의: SVG의 <title>/<desc>를 사용하지 않습니다. React 18/Next 14가
 // body 안의 <title>을 document <title>로 hoisting 시도하는 quirk 때문에
@@ -509,40 +552,22 @@ function accessibleDescription(chain: CausalChainType): string {
 // 둘에 다른 접미사(-d, -m)를 붙임.
 export function CausalChain({ lesson }: { lesson: Lesson }) {
   const { chain, headline } = lesson;
-  const desktop = layoutDesktop(chain);
   const mobile = layoutMobileChain(chain);
-  const dArrows = desktopArrows(desktop);
   const mArrows = mobileChainArrows(mobile);
   const ariaLabel = `인과 다이어그램 — ${headline.title}. ${accessibleDescription(chain)}`;
-  const dMarker = `arrow-d-${lesson.id}`;
   const mMarker = `arrow-m-${lesson.id}`;
 
   return (
-    <div>
+    <div className="relative">
+      {/* 확대 버튼: 다이어그램 컨테이너 우상단. lesson 상세 페이지에서만
+          렌더되는 client component. 모달 코드는 클릭 후 dynamic import. */}
+      <div className="absolute right-0 top-0 z-10">
+        <CausalChainZoomButton lesson={lesson} />
+      </div>
+
       {/* 데스크톱 (sm 이상): 가로 레이아웃 */}
       <div className="hidden sm:block">
-        <svg
-          role="img"
-          aria-label={ariaLabel}
-          viewBox={`0 0 ${desktop.width} ${desktop.height}`}
-          width="100%"
-          height="auto"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <ArrowMarker id={dMarker} />
-          <Arrows paths={dArrows} markerId={dMarker} />
-          <Box {...desktop.trigger} style={neutralStyle()} />
-          {desktop.steps.map((p, i) => (
-            <Box key={i} {...p} style={neutralStyle()} />
-          ))}
-          {desktop.outcomes.map((p, i) => (
-            <Box
-              key={i}
-              {...p}
-              style={outcomeStyle(chain.outcomes[i].impact)}
-            />
-          ))}
-        </svg>
+        <DesktopChainSvg lesson={lesson} idSuffix="d" />
       </div>
 
       {/* 모바일 (sm 미만): SVG 사슬 + HTML 그룹 outcomes.
