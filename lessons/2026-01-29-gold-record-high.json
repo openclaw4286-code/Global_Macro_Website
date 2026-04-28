@@ -1,0 +1,97 @@
+{
+  "id": "2026-01-29-gold-record-high",
+  "meta": {
+    "subject": {
+      "type": "sector",
+      "name": "글로벌 금 시장"
+    },
+    "location": [-0.1278, 51.5074],
+    "category": "commodity",
+    "publishedAt": "2026-01-29",
+    "tags": ["금", "안전자산", "중앙은행", "통화시스템", "인플레헤지"]
+  },
+  "headline": {
+    "title": "금 $5,595, 한 사건이 만든 게 아니다",
+    "hook": "왜 갑자기 모두가 금을 사들이는 걸까요?"
+  },
+  "chain": {
+    "trigger": {
+      "text": "관세전쟁·중동전·Fed 충돌 동시 발발",
+      "sub": "트리거 — 다중 충격"
+    },
+    "steps": [
+      {
+        "text": "달러·미국채 안전자산 지위 약화",
+        "sub": "1차 — 전통 헤지 약화"
+      },
+      {
+        "text": "중앙은행 금 매수 분기당 190톤",
+        "sub": "2차 — 공식 수요 가속"
+      },
+      {
+        "text": "ETF 사상 최대 유입 $890억",
+        "sub": "3차 — 민간 수요 가세"
+      }
+    ],
+    "outcomes": [
+      {
+        "text": "금 1월 29일 사상 최고 $5,595",
+        "sub": "2025년 한 해 50%↑",
+        "impact": "positive"
+      },
+      {
+        "text": "글로벌 ETF AUM 최대 $5,590억",
+        "sub": "1년 만 두 배 증가",
+        "impact": "positive"
+      },
+      {
+        "text": "중앙은행 보유 4,025톤 최대",
+        "sub": "외환보유고 탈달러",
+        "impact": "neutral"
+      },
+      {
+        "text": "달러 인덱스 다년 저점 약세",
+        "sub": "기축통화 신뢰 비용",
+        "impact": "negative"
+      }
+    ]
+  },
+  "story": {
+    "body": "2026년 1월 29일, 금은 온스당 $5,595로 사상 최고를 찍었습니다. 2025년 한 해에만 50% 넘게 올랐고, 글로벌 금 ETF에는 $890억이 새로 들어와 역대 최대를 기록했습니다. 같은 기간 ETF의 운용자산은 1년 만에 두 배인 $5,590억으로 늘었고, 물리적 보유량은 4,025톤으로 역사적 정점을 찍었습니다. 주목할 만한 부분은 이 상승이 한 가지 사건이 아니라 트럼프 관세전쟁, 중동전쟁, Fed 독립성 흔들기, 달러 약세가 같은 시기에 겹친 결과라는 점입니다.\n\n평소 금은 이자도 주지 않고 보관 비용만 드는 자산입니다. 그래서 인플레가 올라도 다른 안전자산인 미 국채와 달러가 멀쩡하다면 큰 움직임이 없습니다. 이번 상승의 진짜 동력은 통화·채권·정치 시스템 자체에 대한 신뢰가 동시에 흔들렸다는 점입니다. 경제학에서는 이를 'debasement hedge(통화 가치 잠식에 대한 헤지)'라고 부르며, 단일 정책 실수가 아니라 신뢰의 인프라에 균열이 보일 때 작동합니다. 금이 이자를 안 주는 단점을 압도할 만큼 매력적이 됐다는 사실은, 다른 자산들이 더 이상 안전을 보장하지 못한다는 시장의 판정에 가깝습니다.\n\n한국은행 외환보유고에서 금 비중은 1%대로 글로벌 평균(약 20%)보다 현저히 낮습니다. 신흥국 중앙은행들이 금 비중을 빠르게 늘리는 흐름과 대조적인 위치입니다. 일반화하면, 이번 상승은 macromap의 다른 lesson들 — 호르무즈 봉쇄, 한국 통화정책 딜레마, 반도체 GDP 집중 — 이 모두 같은 그림의 다른 면이라는 사실을 가리킵니다. 각각의 사건은 시스템 신뢰 균열의 표면이고, 금 가격은 그 균열에 매겨진 청구서입니다.",
+    "keyTakeaway": "안전자산이 비싸진다는 건, 안전한 곳이 줄었다는 뜻입니다."
+  },
+  "supplements": {
+    "charts": [
+      {
+        "type": "line",
+        "label": "온스당 가격 (USD)",
+        "caption": "2024년 말 $2,600에서 2026년 1월 $5,595로 — 다섯 분기 만에 두 배 넘게 올랐습니다.",
+        "xLabels": ["24-Q4", "25-Q1", "25-Q2", "25-Q3", "25-Q4", "26-Q1", "26-Q2"],
+        "values": [2600, 3000, 3300, 3900, 4500, 5100, 4700]
+      }
+    ],
+    "relatedLessons": [
+      "2026-02-15-hormuz-closure",
+      "2026-04-21-bok-shin-supply-shock",
+      "2026-04-23-kr-semi-gdp-concentration"
+    ],
+    "sources": [
+      {
+        "label": "World Gold Council — Gold Demand Trends 2026",
+        "url": "https://www.gold.org/goldhub/research/gold-demand-trends"
+      },
+      {
+        "label": "J.P. Morgan Global Research — Gold Price Forecast 2026",
+        "url": "https://www.jpmorgan.com/insights/global-research/commodities/gold-prices"
+      },
+      {
+        "label": "Bloomberg — Gold Spot Price",
+        "url": "https://www.bloomberg.com/quote/XAUUSD:CUR"
+      },
+      {
+        "label": "IMF World Economic Outlook (April 2026)",
+        "url": "https://www.imf.org/en/Publications/WEO"
+      }
+    ]
+  }
+}
